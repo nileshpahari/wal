@@ -1,0 +1,31 @@
+#!/bin/bash
+
+# Source directory (defaults to current)
+DIR="."
+PREFIX="catppuccin-wallpaper"
+DRY_RUN=false  # Set to false to actually rename
+
+# Collect files (edit extensions as needed)
+mapfile -t FILES < <(find "$DIR" -maxdepth 1 -type f \( -iname '*.jpg' -o -iname '*.png' -o -iname '*.jpeg' \) | sort)
+
+i=1
+
+for FILE in "${FILES[@]}"; do
+    EXT="${FILE##*.}"
+    PADDED_NUM=$(printf "%02d" "$i")
+    BASENAME=$(basename "$FILE")
+    NEW_NAME="${PREFIX}-${PADDED_NUM}.${EXT,,}"  # Lowercase extension
+    
+    # Prevent overwrite
+    if [[ -e "$NEW_NAME" ]]; then
+        echo "❌ Skipping $BASENAME → $NEW_NAME (target exists)"
+    else
+        if [ "$DRY_RUN" = true ]; then
+            echo "Would rename: '$BASENAME' → '$NEW_NAME'"
+        else
+            mv -v -- "$FILE" "$NEW_NAME"
+        fi
+    fi
+    
+    ((i++))
+done
